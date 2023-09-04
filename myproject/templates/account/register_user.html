@@ -1,0 +1,35 @@
+<!-- prettier-ignore -->
+{% extends 'base.html' %}
+
+{% block title %}
+Registration
+{% endblock title %}
+
+{% block content %}
+<section class="form-section row justify-content-center my-5">
+  <form
+    class="col-4 p-4 border rounded"
+    action="{% url 'register_user' %}"
+    method="POST"
+  >
+    {% csrf_token %}
+    <h4 class="text-center text-secondary">Create your account</h4>
+    <div class="mb-3">
+      <label for="exampleInputEmail1" class="form-label">Email address</label>
+      {{ form.email }}
+    </div>
+    <div class="mb-3">
+      <label for="exampleInputPassword1" class="form-label">Password</label>
+      {{ form.password }}
+    </div>
+
+    <div class="d-grid gap-2">
+      <button type="submit" class="btn btn-success btn-lg mt-2">Create</button>
+    </div>
+
+    <a href="#" class="nav-link text-center mt-3"
+      >Already a user? <span class="text-success">Log in</span></a
+    >
+  </form>
+</section>
+{% endblock content %}
