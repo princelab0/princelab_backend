@@ -13,7 +13,10 @@ def home(request):
 
 
 def register_user(request):
-    if request.method == "POST":
+    if request.user.is_authenticated:
+        messages.warning(request, "You are already login")
+        return redirect("user_profile")
+    elif request.method == "POST":
         form = UserForm(request.POST)
         if form.is_valid():
             email = form.cleaned_data["email"]
@@ -34,7 +37,10 @@ def register_user(request):
 
 
 def login(request):
-    if request.method == "POST":
+    if request.user.is_authenticated:
+        messages.warning(request, "You are already login")
+        return redirect("user_profile")
+    elif request.method == "POST":
         email = request.POST["email"]
         password = request.POST["password"]
 

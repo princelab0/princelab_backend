@@ -1,5 +1,8 @@
+from datetime import timezone
 from django.db import models
 from django.contrib.auth.models import AbstractBaseUser, BaseUserManager
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 
 # Create your models here.
@@ -35,6 +38,9 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(max_length=50, unique=True)
+    balance = models.DecimalField(
+        max_digits=10, decimal_places=2, null=True, blank=True
+    )
 
     # required field
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -58,3 +64,47 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+
+class SecreteKey(models.Model):
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    name = models.CharField(max_length=30)
+    key = models.CharField(max_length=100)
+
+    created_at = models.DateTimeField(auto_now_add=True)
+    last_used = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Transition(models.Model):
+    FREE_TRIAL = 1
+    LOAD = 2
+    USE = 3
+    TRANSITION_TYPE = (
+        (FREE_TRIAL, "Free Trial"),
+        (LOAD, "Load"),
+        (USE, "Use"),
+    )
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    amount = models.DecimalField(max_digits=10, decimal_places=3)
+    transition_method = models.CharField(max_length=30, null=True, blank=True)
+    transition_date = models.DateTimeField(auto_now_add=True)
+    transition_type = models.PositiveSmallIntegerField(choices=TRANSITION_TYPE)
+
+    # exipire_date = models.DateTimeField(auto_now=False, auto_now_add=False)
+
+    def __str__(self):
+        return f"{self.amount} {self.transition_date}"
+
+
+@receiver(post_save, sender=User)
+def post_save_make_transition_receiver(sender, instance, created, **kwargs):
+    if created:
+        Transition.objects.create(user=instance, amount=5, transition_type=1)
+
+        # Update the user's balance
+        instance.balance = 5
+        instance.save()

@@ -8,7 +8,7 @@ Log In
 {% block content %}
 <section class="form-section row justify-content-center my-5">
   <form
-    class="col-4 p-4 border rounded"
+    class="col-4 p-4 border rounded border-success"
     action="{% url 'login' %}"
     method="POST"
   >
@@ -28,7 +28,7 @@ Log In
       <button type="submit" class="btn btn-success btn-lg mt-2">Log In</button>
     </div>
 
-    <a href="#" class="nav-link text-center mt-3"
+    <a href="{% url 'register_user' %}" class="nav-link text-center mt-3"
       >Not a member? <span class="text-success">Register</span></a
     >
   </form>

@@ -31,7 +31,54 @@
   }
 }
 
-.profile-icon {
+.google-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.icon-google {
   height: 20px;
-  width: 20px;
+  width: 30px;
+}
+
+/* **************** */
+/* TOOL TIP STYLE*/
+/* *************** */
+.tooltip-icon {
+  height: 15px;
+  width: 15px;
+  opacity: 0.7;
+}
+
+.tooltip-container {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip-trigger {
+  cursor: pointer;
+}
+
+.tooltip {
+  visibility: hidden;
+  background-color: #555;
+  color: #f0eded;
+  text-align: center;
+  border-radius: 4px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  top: 5px;
+  left: 170px;
+  transform: translateX(-50%);
+  opacity: 0;
+  transition: opacity 0.3s;
+  width: 300px;
+}
+
+.tooltip-container:hover .tooltip {
+  text-align: start;
+  visibility: visible;
+  opacity: 1;
 }
