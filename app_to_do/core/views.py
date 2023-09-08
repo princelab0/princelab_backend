@@ -53,27 +53,47 @@ class SignInView(APIView):
             # Invalid input data
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 '''
-from django.shortcuts import get_object_or_404
-from core.models import User
-from rest_framework.renderers import TemplateHTMLRenderer
-from rest_framework.views import APIView
-from app_to_do.serializers import  SignInSerializer
-from rest_framework.response import Response
 from django.shortcuts import render,redirect
+from django.contrib.auth.models import User
+from rest_framework import viewsets
+from rest_framework import permissions
+from core.serializers import signUpSerializer
+from rest_framework.renderers import TemplateHTMLRenderer
+from rest_framework.response import Response
+from rest_framework.authtoken.models import Token
+from django.conf import settings
+from django.db.models.signals import post_save
+from django.dispatch import receiver
+from rest_framework.authtoken.views import ObtainAuthToken
 
-class SignInView(APIView):
-    renderer_classes = [TemplateHTMLRenderer]
-    template_name = 'index.html'
+class signUpViewSet(viewsets.ModelViewSet):
+    queryset = User.objects.all().order_by('-date_joined')
+    serializer_class = signUpSerializer
+    permission_classes = [permissions.IsAuthenticated]
 
-    def get(self, request, pk):
-        profile = get_object_or_404(User, pk=pk)
-        serializer =  SignInSerializer(profile)
-        return Response({'serializer': serializer, 'profile': profile})
 
-    def post(self, request, pk):
-        profile = get_object_or_404(User, pk=pk)
-        serializer =  SignInSerializer(profile, data=request.data)
-        if not serializer.is_valid():
-            return Response({'serializer': serializer, 'profile': profile})
-        serializer.save()
-        
+class signInViewSet(viewsets.ModelViewSet):
+    queryset=User.objects.all()
+    serializer_class=signUpSerializer
+    permission_classes = [permissions.IsAuthenticated]
+    for user in queryset:
+        token = Token.objects.create(user=user)
+
+    @receiver(post_save, sender=settings.AUTH_USER_MODEL)
+    def create_auth_token(sender, instance=None, created=False, **kwargs):
+        if created:
+            Token.objects.create(user=instance)
+
+class UserAuthToken(ObtainAuthToken):
+
+    def post(self, request, *args, **kwargs):
+        serializer = self.serializer_class(data=request.data,
+                                           context={'request': request})
+        serializer.is_valid(raise_exception=True)
+        user = serializer.validated_data['user']
+        token, created = Token.objects.get_or_create(user=user)
+        return Response({
+            'token': token.key,
+            'username': user.username,
+            'email': user.email,
+        })
