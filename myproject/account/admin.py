@@ -1,7 +1,7 @@
 from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
 
-from .models import User, SecreteKey, Transition
+from .models import User, ServiceUse, Transition
 
 # Register your models here.
 
@@ -22,6 +22,14 @@ class TransitionAdmin(admin.ModelAdmin):
     fieldsets = ()
 
 
+class ServiceUseAdmin(admin.ModelAdmin):
+    list_display = ("user", "number_of_hits", "last_hit")
+    ordering = ("-last_hit",)
+    filter_horizontal = ()
+    list_filter = ()
+    fieldsets = ()
+
+
 admin.site.register(User, CustomUserAdmin)
-admin.site.register(SecreteKey)
+admin.site.register(ServiceUse, ServiceUseAdmin)
 admin.site.register(Transition, TransitionAdmin)

@@ -33,6 +33,18 @@ User Profile
     <h3>$ {{ user.balance }}</h3>
     <button class="btn btn-success btn-sm my-2">TopUp</button>
     <button class="btn btn-outline-secondary btn-sm my-2">View usages</button>
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">Token</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>{{ token }}</td>
+        </tr>
+      </tbody>
+    </table>
   </section>
 </main>
 {% endblock content %}

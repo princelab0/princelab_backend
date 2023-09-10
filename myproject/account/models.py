@@ -66,16 +66,13 @@ class User(AbstractBaseUser):
         return True
 
 
-class SecreteKey(models.Model):
+class ServiceUse(models.Model):
     user = models.OneToOneField(User, on_delete=models.CASCADE)
-    name = models.CharField(max_length=30)
-    key = models.CharField(max_length=100)
+    number_of_hits = models.IntegerField(default=0)
+    last_hit = models.DateTimeField(auto_now_add=True)
 
-    created_at = models.DateTimeField(auto_now_add=True)
-    last_used = models.DateTimeField(auto_now_add=True)
-
-    def __str__(self):
-        return self.name
+    def __str__(self) -> str:
+        return f"{self.user} {self.number_of_hits}"
 
 
 class Transition(models.Model):
@@ -108,3 +105,5 @@ def post_save_make_transition_receiver(sender, instance, created, **kwargs):
         # Update the user's balance
         instance.balance = 5
         instance.save()
+
+        ServiceUse.objects.create(user=instance)
