@@ -2,6 +2,8 @@ from django.shortcuts import redirect, render
 from django.contrib import messages, auth
 from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
+from django.db.models.signals import post_save
+from django.dispatch import receiver
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -24,7 +26,11 @@ from .serializers import UserSerializer, LoginSerializer
 from .permissions import IsSuperUser
 from .custom_throttling import CustomUserRateThrottle
 
-from .utils import get_number_of_hits, update_number_of_hits
+from .utils import (
+    get_number_of_hits,
+    update_number_of_hits,
+    check_user_has_credit_or_subscription,
+)
 
 # Create your views here.
 
@@ -181,6 +187,12 @@ class ServicesAPI(APIView):
         # Store the user that hit this API
         user = request.user
 
+        if check_user_has_credit_or_subscription(user=user):
+            return Response(
+                {"message": "User does not have enough credit or a subscription."},
+                status=status.HTTP_403_FORBIDDEN,
+            )
+
         # Get the number of times this user has hit this API
         number_of_hits = get_number_of_hits(user)
         # Increment the number of hits
@@ -188,8 +200,6 @@ class ServicesAPI(APIView):
 
         # Update the number of hits in the database
         update_number_of_hits(user, number_of_hits)
-
-        print(number_of_hits)
 
         if param_value is not None:
             return Response(
@@ -200,3 +210,10 @@ class ServicesAPI(APIView):
             return Response(
                 {"message": "No parameter provided"}, status=status.HTTP_200_OK
             )
+
+
+@receiver(post_save, sender=ServicesAPI)
+def post_save_print(sender, instance, created, **kwargs):
+    print("API")
+    if created:
+        print("API Hits")

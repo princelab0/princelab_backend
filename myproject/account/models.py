@@ -38,9 +38,6 @@ class UserManager(BaseUserManager):
 
 class User(AbstractBaseUser):
     email = models.EmailField(max_length=50, unique=True)
-    balance = models.DecimalField(
-        max_digits=10, decimal_places=2, null=True, blank=True
-    )
 
     # required field
     date_joined = models.DateTimeField(auto_now_add=True)
@@ -49,7 +46,7 @@ class User(AbstractBaseUser):
     modified_date = models.DateTimeField(auto_now_add=True)
     is_admin = models.BooleanField(default=False)
     is_staff = models.BooleanField(default=False)
-    is_active = models.BooleanField(default=False)
+    is_active = models.BooleanField(default=True)
     is_superadmin = models.BooleanField(default=False)
 
     USERNAME_FIELD = "email"
@@ -64,6 +61,23 @@ class User(AbstractBaseUser):
 
     def has_module_perms(self, app_label):
         return True
+
+
+class UserProfile(models.Model):
+    BASIC = 1
+    PRO = 2
+    SUBSCRIPTION = {
+        (BASIC, "Basic"),
+        (PRO, "Pro"),
+    }
+    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    credit_balance = models.DecimalField(max_digits=10, decimal_places=2, default=5.00)
+    has_subscribed = models.PositiveSmallIntegerField(
+        choices=SUBSCRIPTION, blank=True, default=BASIC
+    )
+
+    # def __str__(self):
+    #     return self.user
 
 
 class ServiceUse(models.Model):
@@ -98,12 +112,19 @@ class Transition(models.Model):
 
 
 @receiver(post_save, sender=User)
-def post_save_make_transition_receiver(sender, instance, created, **kwargs):
+def post_save_create_user_profile_service_use(sender, instance, created, **kwargs):
     if created:
-        Transition.objects.create(user=instance, amount=5, transition_type=1)
-
-        # Update the user's balance
-        instance.balance = 5
-        instance.save()
-
+        UserProfile.objects.create(user=instance)
         ServiceUse.objects.create(user=instance)
+
+
+# @receiver(post_save, sender=User)
+# def post_save_make_transition_receiver(sender, instance, created, **kwargs):
+#     if created:
+#         Transition.objects.create(user=instance, amount=5, transition_type=1)
+
+#         # Update the user's balance
+#         instance.balance = 5
+#         instance.save()
+
+#         ServiceUse.objects.create(user=instance)

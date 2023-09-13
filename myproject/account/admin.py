@@ -1,13 +1,13 @@
 from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
 
-from .models import User, ServiceUse, Transition
+from .models import User, ServiceUse, Transition, UserProfile
 
 # Register your models here.
 
 
 class CustomUserAdmin(admin.ModelAdmin):
-    list_display = ("email", "balance", "is_active")
+    list_display = ("email", "is_active")
     ordering = ("-date_joined",)
     filter_horizontal = ()
     list_filter = ()
@@ -30,6 +30,15 @@ class ServiceUseAdmin(admin.ModelAdmin):
     fieldsets = ()
 
 
+class UserProfileAdmin(admin.ModelAdmin):
+    list_display = ("user", "credit_balance", "has_subscribed")
+    ordering = ("-user",)
+    filter_horizontal = ()
+    list_filter = ()
+    fieldsets = ()
+
+
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(ServiceUse, ServiceUseAdmin)
 admin.site.register(Transition, TransitionAdmin)
+admin.site.register(UserProfile, UserProfileAdmin)
