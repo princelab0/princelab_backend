@@ -166,3 +166,12 @@ REST_FRAMEWORK = {
         "user": "60/minute",
     },
 }
+
+# Email configuration
+
+EMAIL_BACKEND = "django.core.mail.backends.smtp.EmailBackend"
+EMAIL_HOST = "smtp.gmail.com"
+EMAIL_PORT = 587
+EMAIL_HOST_USER = "ecoshop420@gmail.com"
+EMAIL_HOST_PASSWORD = "heaxhbpdjeszzhfy"
+EMAIL_USE_TLS = True

@@ -4,6 +4,9 @@ from django.contrib.auth import authenticate
 from django.contrib.auth.decorators import login_required
 from django.db.models.signals import post_save
 from django.dispatch import receiver
+from django.utils.http import urlsafe_base64_decode
+from django.contrib.auth.tokens import default_token_generator
+from django.http import HttpResponse
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -30,6 +33,7 @@ from .utils import (
     get_number_of_hits,
     update_number_of_hits,
     check_user_has_credit_or_subscription,
+    send_verification_email,
 )
 
 # Create your views here.
@@ -117,6 +121,11 @@ class UserAPI(APIView):
         serializer = UserSerializer(data=data)
         if serializer.is_valid():
             serializer.save()
+            user = User.objects.get(email=serializer.data["email"])
+            # Send Verification email
+            mail_subject = "Please activate your account"
+            email_template = "account/email/account_verification_email.html"
+            send_verification_email(request, user, mail_subject, email_template)
             return Response(
                 {"message": serializer.data}, status=status.HTTP_201_CREATED
             )
@@ -152,6 +161,13 @@ class LoginAPI(APIView):
 
     def post(self, request):
         data = request.data
+        if User.objects.get(email=data["email"]).is_active == False:
+            return Response(
+                {
+                    "message": "Your account is not activate please check your email to activate."
+                },
+                status=status.HTTP_401_UNAUTHORIZED,
+            )
         serializer = LoginSerializer(data=data)
         if not serializer.is_valid():
             return Response(
@@ -217,3 +233,18 @@ def post_save_print(sender, instance, created, **kwargs):
     print("API")
     if created:
         print("API Hits")
+
+
+def activate(request, uidb64, token):
+    # Activate the user by setting is_active true
+    try:
+        uid = urlsafe_base64_decode(uidb64).decode()
+        user = User._default_manager.get(pk=uid)
+    except (TypeError, ValueError, OverflowError, User.DoesNotExist):
+        user = None
+    if user is not None and default_token_generator.check_token(user, token):
+        user.is_active = True
+        user.save()
+        return HttpResponse("Your account have been activated")
+    else:
+        return HttpResponse("Invalid activation link")

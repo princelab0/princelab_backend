@@ -19,4 +19,6 @@ urlpatterns = [
     # path("api/login/", views.UserLoginApiView.as_view()),
     path("api/login/", views.LoginAPI.as_view()),
     path("api/service/", views.ServicesAPI.as_view()),
+    # Email verification activate url
+    path("activate/<uidb64>/<token>/", views.activate, name="activate"),
 ]
