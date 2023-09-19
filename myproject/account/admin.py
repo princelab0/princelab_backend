@@ -1,7 +1,7 @@
 from django.contrib.auth.admin import UserAdmin
 from django.contrib import admin
 
-from .models import User, ServiceUse, Transition, UserProfile
+from .models import User, ServiceUse, Transition, UserProfile, UserActivity
 
 # Register your models here.
 
@@ -12,6 +12,7 @@ class CustomUserAdmin(admin.ModelAdmin):
     filter_horizontal = ()
     list_filter = ()
     fieldsets = ()
+    readonly_fields = ("password",)
 
 
 class TransitionAdmin(admin.ModelAdmin):
@@ -38,7 +39,16 @@ class UserProfileAdmin(admin.ModelAdmin):
     fieldsets = ()
 
 
+class UserActivityeAdmin(admin.ModelAdmin):
+    list_display = ("user", "status", "created_at")
+    ordering = ("-created_at",)
+    filter_horizontal = ()
+    list_filter = ()
+    fieldsets = ()
+
+
 admin.site.register(User, CustomUserAdmin)
 admin.site.register(ServiceUse, ServiceUseAdmin)
 admin.site.register(Transition, TransitionAdmin)
 admin.site.register(UserProfile, UserProfileAdmin)
+admin.site.register(UserActivity, UserActivityeAdmin)

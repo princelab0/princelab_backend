@@ -5,7 +5,7 @@ from django.utils.encoding import force_bytes
 from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import EmailMessage
 
-from account.models import ServiceUse, UserProfile
+from account.models import ServiceUse, UserProfile, UserActivity
 
 
 def get_number_of_hits(user):
@@ -25,10 +25,19 @@ def update_number_of_hits(user, number_of_hits):
     if int(ServiceUse.objects.get(user=user).number_of_hits) == 10:
         user_profile = UserProfile.objects.get(user=user)
         if user_profile.credit_balance >= 1:
+            # Deduct the credit
             current_balance = user_profile.credit_balance
             current_balance -= 1
             user_profile.credit_balance = current_balance
             user_profile.save()
+
+            # Reset the number_of_hits
+            user_service_table = ServiceUse.objects.get(user=user)
+            user_service_table.number_of_hits = 0
+            user_service_table.save()
+
+            # Save the user activity
+            UserActivity.objects.create(user=user, status=2)
         elif user_profile.has_subscribed == 2:
             print("Payment Email send")
 
@@ -36,7 +45,7 @@ def update_number_of_hits(user, number_of_hits):
 def check_user_has_credit_or_subscription(user):
     """
     Checks if a user has either a credit balance greater than or equal to 1 or has
-    subscribed.
+    subscription.
     """
 
     user_profile = UserProfile.objects.get(user=user)

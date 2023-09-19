@@ -111,11 +111,28 @@ class Transition(models.Model):
         return f"{self.amount} {self.transition_date}"
 
 
+class UserActivity(models.Model):
+    CREDIT_GAIN = 1
+    CREDIT_USE = 2
+    CREDIT_EXPIRE = 3
+    PAYMENT = 4
+    STATUS_CHOOICE = {
+        (CREDIT_GAIN, "Credit gain"),
+        (CREDIT_USE, "Credit use"),
+        (CREDIT_EXPIRE, "Credit expire"),
+        (PAYMENT, "Payment"),
+    }
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    status = models.PositiveSmallIntegerField(choices=STATUS_CHOOICE)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+
 @receiver(post_save, sender=User)
 def post_save_create_user_profile_service_use(sender, instance, created, **kwargs):
     if created:
         UserProfile.objects.create(user=instance)
         ServiceUse.objects.create(user=instance)
+        UserActivity.objects.create(user=instance, status=1)
 
 
 # @receiver(post_save, sender=User)
