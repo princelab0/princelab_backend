@@ -1,4 +1,5 @@
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
 
 from .models import User
 
@@ -40,3 +41,32 @@ class UserSerializer(serializers.ModelSerializer):
 class LoginSerializer(serializers.Serializer):
     email = serializers.CharField()
     password = serializers.CharField()
+
+
+class ChangePassword(serializers.Serializer):
+    email = serializers.CharField()
+    current_password = serializers.CharField()
+    new_password = serializers.CharField()
+
+    def validate(self, data):
+        current_password = data.get("current_password")
+        new_password = data.get("new_password")
+
+        if current_password == new_password:
+            raise ValidationError(
+                "New password must be different from the current password."
+            )
+
+        return data
+
+
+class ForgotPassword(serializers.Serializer):
+    email = serializers.EmailField()
+
+    def validate(self, data):
+        try:
+            user = User.objects.get(email=data.get("email"))
+        except User.DoesNotExist:
+            raise ValidationError("User with this email does not exist.")
+
+        return data

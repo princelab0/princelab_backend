@@ -7,6 +7,8 @@ from django.core.mail import EmailMessage
 
 from account.models import ServiceUse, UserProfile, UserActivity
 
+import random
+
 
 def get_number_of_hits(user):
     """Get the number of times this user has hit the Thai API."""
@@ -66,6 +68,20 @@ def send_verification_email(request, user, mail_subject, email_template):
         },
     )
     to_email = user.email
+    mail = EmailMessage(mail_subject, message, to=[to_email])
+    mail.content_subtype = "html"
+    mail.send()
+
+
+def send_otp(request, mail_subject, email_template, email):
+    # Generate a random 4-digit OTP
+    otp = random.randint(1000, 9999)
+
+    # Store the OTP in the session
+    request.session["otp"] = otp
+
+    message = render_to_string(email_template, {"otp": otp})
+    to_email = email
     mail = EmailMessage(mail_subject, message, to=[to_email])
     mail.content_subtype = "html"
     mail.send()

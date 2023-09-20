@@ -25,7 +25,7 @@ from rest_framework.settings import api_settings
 from .forms import UserForm
 from .models import User
 
-from .serializers import UserSerializer, LoginSerializer
+from .serializers import UserSerializer, LoginSerializer, ChangePassword, ForgotPassword
 from .permissions import IsSuperUser
 from .custom_throttling import CustomUserRateThrottle
 
@@ -34,6 +34,7 @@ from .utils import (
     update_number_of_hits,
     check_user_has_credit_or_subscription,
     send_verification_email,
+    send_otp,
 )
 
 # Create your views here.
@@ -248,3 +249,51 @@ def activate(request, uidb64, token):
         return HttpResponse("Your account have been activated")
     else:
         return HttpResponse("Invalid activation link")
+
+
+class ChangePasswordAPI(APIView):
+    permission_classes = [IsSuperUser]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        data = request.data
+        serializer = ChangePassword(data=data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+        user = authenticate(
+            email=serializer.data["email"], password=serializer.data["current_password"]
+        )
+        if not user:
+            return Response(
+                {"message": "Wrong Password"}, status=status.HTTP_400_BAD_REQUEST
+            )
+        user.set_password(serializer.data["new_password"])
+        user.save()
+        return Response({"message": "Password Change"}, status=status.HTTP_200_OK)
+
+
+class ForgotPasswrdOtpSendAPI(APIView):
+    permission_classes = [IsSuperUser]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        data = request.data
+        serializer = ForgotPassword(data=data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+        # send otp to email
+        email_template = "account/email/forgot_password_otp.html"
+        mail_subject = "Forgot password OTP"
+        send_otp(
+            request,
+            email=serializer.data["email"],
+            email_template=email_template,
+            mail_subject=mail_subject,
+        )
+        return Response(
+            {"message": "OTP has been send to your email."}, status=status.HTTP_200_OK
+        )
