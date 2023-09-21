@@ -175,3 +175,5 @@ EMAIL_PORT = 587
 EMAIL_HOST_USER = "ecoshop420@gmail.com"
 EMAIL_HOST_PASSWORD = "heaxhbpdjeszzhfy"
 EMAIL_USE_TLS = True
+
+STRIPE_SECRET_KEY = "sk_test_51NsJpJIcB7Zsil8MNriuQUpS1s9WBk0q3jMvmptOo2ZkRpzZLwsYYxNepejUcyDVnxjGVG3cVCZnPTESHo9Inpl900IZi0AU49"
