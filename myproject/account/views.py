@@ -7,6 +7,7 @@ from django.dispatch import receiver
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.tokens import default_token_generator
 from django.http import HttpResponse
+from django.utils import timezone
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
@@ -25,7 +26,13 @@ from rest_framework.settings import api_settings
 from .forms import UserForm
 from .models import User
 
-from .serializers import UserSerializer, LoginSerializer, ChangePassword, ForgotPassword
+from .serializers import (
+    UserSerializer,
+    LoginSerializer,
+    ChangePassword,
+    ForgotPassword,
+    ForgotPasswordOtpValidate,
+)
 from .permissions import IsSuperUser
 from .custom_throttling import CustomUserRateThrottle
 
@@ -297,3 +304,50 @@ class ForgotPasswrdOtpSendAPI(APIView):
         return Response(
             {"message": "OTP has been send to your email."}, status=status.HTTP_200_OK
         )
+
+
+class ForgotPasswordOtpValidateChangePasswordAPI(APIView):
+    permission_classes = [IsSuperUser]
+    authentication_classes = [TokenAuthentication]
+
+    def post(self, request):
+        data = request.data
+        serializer = ForgotPasswordOtpValidate(data=data)
+        if not serializer.is_valid():
+            return Response(
+                {"message": serializer.errors}, status=status.HTTP_400_BAD_REQUEST
+            )
+        # Get the stored data from the session
+        otp_session = request.session.get("otp")
+        email_session = request.session.get("email")
+
+        if (
+            otp_session == serializer.data["otp"]
+            and email_session == serializer.data["email"]
+        ):
+            user = User.objects.get(email=serializer.data["email"])
+            user.set_password(serializer.data["new_password"])
+            user.save()
+            return Response({"message": "Password reset successfully"})
+        else:
+            return Response({"message": "Invalid OTP"})
+
+        # if otp_data is not None:
+        #     # Check if the data has expired (2 minutes in this case)
+        #     timestamp = otp_data.get("timestamp", 0)
+        #     if timezone.now().timestamp() - timestamp > 120:  # 120 seconds = 2 minutes
+        #         # Data has expired, remove it from the session
+        #         del request.session["otp_data"]
+        #         return Response({"message": "OTP has expired"})
+        #     else:
+        #         otp = otp_data.get("otp")
+        #         email = otp_data.get("email")
+        #         # Use otp and email as needed
+        #         if otp == otp and email == email:
+        #             user = User.objects.get(email=email)
+        #             user.set_password(serializer.data["new_password"])
+        #             user.save()
+        #             return Response({"message": "Password change"})
+        # else:
+        #     # Data not found in the session, handle it accordingly
+        #     return Response({"message": "OTP not generated"})

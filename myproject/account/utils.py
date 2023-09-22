@@ -77,8 +77,9 @@ def send_otp(request, mail_subject, email_template, email):
     # Generate a random 4-digit OTP
     otp = random.randint(1000, 9999)
 
-    # Store the OTP in the session
+    # Store the OTP and email in the session
     request.session["otp"] = otp
+    request.session["email"] = email
 
     message = render_to_string(email_template, {"otp": otp})
     to_email = email
