@@ -57,7 +57,7 @@ from django.shortcuts import render,redirect
 from django.contrib.auth.models import User
 from rest_framework import viewsets
 from rest_framework import permissions
-from core.serializers import signUpSerializer
+from core.serializers import signUpSerializer,signInSerializer
 from rest_framework.renderers import TemplateHTMLRenderer
 from rest_framework.response import Response
 from rest_framework.authtoken.models import Token
@@ -74,7 +74,7 @@ class signUpViewSet(viewsets.ModelViewSet):
 
 class signInViewSet(viewsets.ModelViewSet):
     queryset=User.objects.all()
-    serializer_class=signUpSerializer
+    serializer_class=signInSerializer
     permission_classes = [permissions.IsAuthenticated]
     for user in queryset:
         token = Token.objects.create(user=user)
