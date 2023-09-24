@@ -325,6 +325,7 @@ class ForgotPasswordOtpValidateChangePasswordAPI(APIView):
             otp_session == serializer.data["otp"]
             and email_session == serializer.data["email"]
         ):
+            del request.session["otp", "email"]
             user = User.objects.get(email=serializer.data["email"])
             user.set_password(serializer.data["new_password"])
             user.save()
