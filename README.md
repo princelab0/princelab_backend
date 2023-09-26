@@ -1,6 +1,8 @@
 # princelab_backend
 ## User CRUD operation API
 
+Note:- use token which i have provided for user CRUD operation
+
 1. /api/user/
 Above api contain GET,POST,PUT,PATCH,DELETE methos 
 -GET method return all the user
