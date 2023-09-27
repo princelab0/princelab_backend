@@ -13,6 +13,15 @@ Registration
 <br>
 
 <form action="{% url "stripe_test" %}" method="POST">
+    {% csrf_token %}
     <button type="submit" id="checkout-button">Checkout</button>
-  </form>
+</form>
+
+<br>
+<br>
+
+<form action="{% url "payment" %}" method="POST">
+    {% csrf_token %}
+    <button type="submit" id="checkout-button">Test</button>
+</form>
 {% endblock content %}
