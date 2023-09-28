@@ -5,8 +5,11 @@ from django.urls import reverse
 
 from rest_framework.views import APIView
 from rest_framework.response import Response
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.authentication import TokenAuthentication
 
-# Create your views here.
+from payment.serializers import PaymentSerializer
+from payment.models import Payment
 
 
 import stripe
@@ -39,26 +42,45 @@ class StripePaymentTestView(APIView):
 
 
 class PaymentView(APIView):
-    def post(self, request):
-        # retrive the data from request.data and send in serilizer
+    permission_classes = [IsAuthenticated]
+    authentication_classes = [TokenAuthentication]
 
-        # continue if serializer.is_valid()
+    def post(self, request, *args, **kwargs):
+        # retrive the data from request.data and send in serilizer
+        # request.data["user"] = request.user.id
+
+        seriliazer = PaymentSerializer(data=request.data)
+        print("seriliazer", seriliazer)
+        print("error")
+        seriliazer.is_valid(raise_exception=True)
+        print("seriliazer data", seriliazer.data)
+        print("error1")
         try:
             __secret_key_for_user = os.urandom(32)
             secret_key_for_user = binascii.hexlify(__secret_key_for_user).decode()
             # store payemnt info in database
+            print("error2")
+            print(request.user.id)
+            uui_data = Payment.objects.create(
+                user=request.user, unique_id_for_user=secret_key_for_user
+            )
+            print("error3")
             checkout_session = stripe.checkout.Session.create(
                 line_items=[
                     {
                         "price_data": {
                             "currency": "usd",
-                            "unit_amount": 2000,
+                            "unit_amount": int(request.data["payment_amount"]),
                             "product_data": {
-                                "name": "Test Product",
+                                "name": request.data["payment_name"],
                             },
                         },
                         "quantity": 1,
                     },
+                ],
+                metadata={"product_id": request.data["payment_name"]},
+                payment_method_types=[
+                    "card",
                 ],
                 mode="payment",
                 success_url="http://localhost:8000/?success=true&session_id={CHECKOUT_SESSION_ID}&uid="
@@ -66,19 +88,17 @@ class PaymentView(APIView):
                 cancel_url="http://localhost:8000/?cancel=true",
             )
             if checkout_session:
-                # request.data["unique_id"] = checkout_session.id
-                try:
-                    amount = request.data["payment_name"]
-                    unique_id = request.data["unique_id"]
-
-                except:
-                    amount = 0
-                    unique_id = "0"
-                check_id = checkout_session.id
-                print("amount", amount)
-                print("unique_id", unique_id)
-                print("check_id", check_id)
+                request.data["unique_id"] = checkout_session.id
                 # update the payment info in database
+                Payment.objects.filter(
+                    unique_id_for_user=uui_data.unique_id_for_user
+                ).update(
+                    user=request.user,
+                    payment_name=request.data["payment_name"],
+                    payment_amount=request.data["payment_amount"],
+                    unique_payment_id=checkout_session.id,
+                    payment_status=True,
+                )
                 return redirect(checkout_session.url, status=201)
         except Exception as e:
             print("exception", e)
