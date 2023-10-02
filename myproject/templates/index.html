@@ -8,15 +8,6 @@ Registration
 {% block content %}
 <h1>Home page</h1>
 <br>
-<a href="{% url "stripe_test" %}">Stripe Test</a>
-
-<br>
-
-<form action="{% url "stripe_test" %}" method="POST">
-    {% csrf_token %}
-    <button type="submit" id="checkout-button">Checkout</button>
-</form>
-
 <br>
 <br>
 

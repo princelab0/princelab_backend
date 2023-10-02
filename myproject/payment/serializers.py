@@ -3,7 +3,8 @@ from payment.models import Payment
 
 
 class PaymentSerializer(serializers.ModelSerializer):
-    payment_name = serializers.ChoiceField(choices=["stripe"], required=True)
+    payment_name = serializers.CharField(required=True)
+    payment_amount = serializers.FloatField(required=True)
 
     class Meta:
         model = Payment

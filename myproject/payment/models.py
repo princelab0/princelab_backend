@@ -15,4 +15,4 @@ class Payment(models.Model):
     payment_date = models.DateTimeField(auto_now_add=True, null=True, blank=True)
 
     def __str__(self):
-        return "{self.user.email} - {self.pament_amount} - {self.payment_status}"
+        return f"{self.user.email} - {self.payment_amount} - {self.payment_status}"

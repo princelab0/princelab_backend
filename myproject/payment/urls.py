@@ -3,6 +3,5 @@ from django.urls import path
 from payment import views
 
 urlpatterns = [
-    path("stripe_test/", views.StripePaymentTestView.as_view(), name="stripe_test"),
-    path("payment/", views.PaymentView.as_view(), name="payment"),
+    path("stripe_payment/", views.PaymentView.as_view(), name="payment"),
 ]

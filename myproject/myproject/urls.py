@@ -40,7 +40,7 @@ schema_view = get_schema_view(
 urlpatterns = [
     path("admin/", admin.site.urls),
     path("", include("account.urls")),
-    path("payment/", include("payment.urls")),
+    path("api/payment/", include("payment.urls")),
     # DRF YASG URLS
     path(
         "swagger(?P<format>\.json|\.yaml)$",

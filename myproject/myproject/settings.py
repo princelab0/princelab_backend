@@ -181,4 +181,4 @@ EMAIL_USE_TLS = True
 STRIPE_SECRET_KEY = "sk_test_51NsJpJIcB7Zsil8MNriuQUpS1s9WBk0q3jMvmptOo2ZkRpzZLwsYYxNepejUcyDVnxjGVG3cVCZnPTESHo9Inpl900IZi0AU49"
 
 # Set session cookie expiration time to 2 minutes (120 seconds)
-SESSION_COOKIE_AGE = 120
+# SESSION_COOKIE_AGE = 120
