@@ -21,6 +21,8 @@ from rest_framework.throttling import UserRateThrottle
 from rest_framework.authtoken.views import ObtainAuthToken
 from rest_framework.settings import api_settings
 
+from drf_yasg.utils import swagger_auto_schema
+
 
 from .forms import UserForm
 from .models import User
@@ -118,6 +120,10 @@ class UserAPI(APIView):
     permission_classes = [IsSuperUser, IsAuthenticated]
     authentication_classes = [TokenAuthentication]
 
+    @swagger_auto_schema(
+        query_serializer=UserSerializer,
+        responses={200: "User successfully created"},
+    )
     def get(self, request):
         user = User.objects.all()
         serializer = UserSerializer(user, many=True)
@@ -166,6 +172,10 @@ class LoginAPI(APIView):
     permission_classes = [IsSuperUser]
     authentication_classes = [TokenAuthentication]
 
+    @swagger_auto_schema(
+        query_serializer=LoginSerializer,
+        responses={200: "User successfully created"},
+    )
     def post(self, request):
         data = request.data
         if User.objects.get(email=data["email"]).is_active == False:
@@ -261,6 +271,10 @@ class ChangePasswordAPI(APIView):
     permission_classes = [IsSuperUser]
     authentication_classes = [TokenAuthentication]
 
+    @swagger_auto_schema(
+        query_serializer=ChangePassword,
+        responses={200: "User successfully created"},
+    )
     def post(self, request):
         data = request.data
         serializer = ChangePassword(data=data)
@@ -284,6 +298,10 @@ class ForgotPasswrdOtpSendAPI(APIView):
     permission_classes = [IsSuperUser]
     authentication_classes = [TokenAuthentication]
 
+    @swagger_auto_schema(
+        query_serializer=ForgotPassword,
+        responses={200: "User successfully created"},
+    )
     def post(self, request):
         data = request.data
         serializer = ForgotPassword(data=data)
@@ -309,6 +327,10 @@ class ForgotPasswordOtpValidateChangePasswordAPI(APIView):
     permission_classes = [IsSuperUser]
     authentication_classes = [TokenAuthentication]
 
+    @swagger_auto_schema(
+        query_serializer=ForgotPasswordOtpValidate,
+        responses={200: "User successfully created"},
+    )
     def post(self, request):
         data = request.data
         serializer = ForgotPasswordOtpValidate(data=data)

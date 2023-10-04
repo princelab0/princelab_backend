@@ -9,6 +9,8 @@ from rest_framework.response import Response
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.authentication import TokenAuthentication
 
+from drf_yasg.utils import swagger_auto_schema
+
 from payment.serializers import PaymentSerializer
 from payment.models import Payment
 from account.models import User
@@ -26,6 +28,10 @@ class PaymentView(APIView):
     # permission_classes = [IsAuthenticated]
     # authentication_classes = [TokenAuthentication]
 
+    @swagger_auto_schema(
+        query_serializer=PaymentSerializer,
+        responses={200: "User successfully created"},
+    )
     def post(self, request, *args, **kwargs):
         # retrive the data from request.data and send in serilizer
         # request.data["user"] = request.user.id
